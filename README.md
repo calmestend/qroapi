@@ -86,40 +86,53 @@ Con esto la API puede aprender automáticamente dónde vive el usuario, su lugar
 Asegúrate de tener instaladas las siguientes herramientas:
 
 - Python 3.8 o superior
-- Node.js 16 o superior
+- Node.js 20 o superior
 - Git
 - Yarn o npm
 - [Expo CLI](https://docs.expo.dev/get-started/installation/) → `npm install -g expo-cli`
-- PostgreSQL (opcional, si se usa como base de datos)
 - Virtualenv → `pip install virtualenv`
 
 ---
 
 ## Instrucciones para uso de apiQRO DEMO v1.0
 
-### 1. Clonar el Repositorio
+Para la utilización correcta de este proyecto y todas sus funcionalidades es
+necesario montar los siguientes 3 servidores, por ende se utilizarán diferentes
+terminales o entornos.
 
+### Clonar repositorio 
 ```bash
-git clone https://github.com/tuusuario/tu-repo.git
-cd tu-repo
-
-cd backend
-python -m venv env
-source env/bin/activate  # En Windows: env\Scripts\activate
-
-pip install -r requirements.txt # de usar venv regular
+git clone https://github.com/calmestend/qroapi
 ```
 
-### crear .env
+#### Despliegue de API
 ```bash
+cd hackathon-troyano/ # Dentro de qroapi/
+npm install
+npm run start # Ejecutar servidor
+
+```
+
+#### Despliegue de Agente AI
+```bash
+cd hack-uaq/ # Dentro de qroapi/
+python -m venv .venv
+source .venv/bin/activate
+source env/bin/activate  # Solo en Windows: env\Scripts\activate
+pip install -r requirements.txt # de usar venv regular
+python climaqro/manage.py runserver 0.0.0.0:8000 # Ejecutar servidor
+
+# Agregar en .env
 GOOGLE_API_KEY="APIKEY_GEMINI"
 api_key="APIKEY_OPENWEATHER"
 route_found="False"
 ```
 
-### correr el backend (django)
+#### Despliegue de simulacion de APP
 ```bash
-python manage.py runserver
+cd my-app/ # Dentro de qroapi/
+npm install
+npx expo start # Ejecución mediante expo go
 ```
 
 ### QROapi es un proyecto diseñado por:
