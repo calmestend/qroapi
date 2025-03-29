@@ -14,11 +14,6 @@ import { styles } from './styles';
 
 const API_URL = 'http://192.168.137.70:3000';
 
-const formatTime = (timestamp: number) => {
-	const date = new Date(timestamp);
-	return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-};
-
 export const MapDirections: React.FC = () => {
 	const navigation = useNavigation();
 	const mapRef = useRef(null);
@@ -93,30 +88,6 @@ export const MapDirections: React.FC = () => {
 
 			const json = await res.json();
 
-			// Procesar los tiempos de llegada para cada parada
-			const stopTimes = new Map();
-			let currentTime = null;
-
-			json.result.itinerary.legs.forEach(leg => {
-				if (leg.walkLeg) {
-					if (!currentTime) {
-						currentTime = leg.walkLeg.time.startTimeUtc;
-					}
-					currentTime = leg.walkLeg.time.endTimeUtc;
-				} else if (leg.lineWithAlternativesLeg) {
-					const line = leg.lineWithAlternativesLeg.alternativeLines[0];
-					currentTime = line.time.startTimeUtc;
-					const timePerStop = (line.time.endTimeUtc - currentTime) / (line.stopSequenceIds.length - 1);
-
-					line.stopSequenceIds.forEach((stopId, index) => {
-						const stopTime = currentTime + (timePerStop * index);
-						stopTimes.set(stopId, formatTime(stopTime));
-					});
-
-					currentTime = line.time.endTimeUtc;
-				}
-			});
-
 			const routeInformation = {
 				lines: json.supplementalData.lineGroupSummaryList.map(line => ({
 					number: line.lineNumber,
@@ -175,8 +146,7 @@ export const MapDirections: React.FC = () => {
 					longitude: stop.stopLocation.longitude / 1e6,
 				},
 				title: stop.stopName,
-				stopId: stop.stopId,
-				arrivalTime: stopTimes.get(stop.stopId)
+				stopId: stop.stopId
 			}));
 
 			const allRoutes = [...walkingRoutes, ...busRoutes];
@@ -228,6 +198,10 @@ export const MapDirections: React.FC = () => {
 				handleResultSelect(originResults[0], 'origin');
 			}
 		}
+	};
+
+	const handleNavigateBack = () => {
+		navigation.goBack();
 	};
 
 	useEffect(() => {
@@ -307,38 +281,35 @@ export const MapDirections: React.FC = () => {
 						destination={destination}
 					/>
 
-					{!routeInfo && (
-						<View style={styles.inputsContainer}>
-							<SearchInput
-								placeholder="Origen"
-								value={originQuery}
-								onChangeText={setOriginQuery}
-								onBlur={validateOrigin}
-								results={originResults}
-								onResultSelect={(item) => handleResultSelect(item, 'origin')}
-							/>
-							<SearchInput
-								placeholder="Destino"
-								value={destinationQuery}
-								onChangeText={setDestinationQuery}
-								results={destinationResults}
-								onResultSelect={(item) => handleResultSelect(item, 'destination')}
-							/>
-						</View>
-					)}
+					<View style={styles.inputsContainer}>
+						{showRouteInfo && routeInfo ? (
+							<RouteInfoWidget routeInfo={routeInfo} />
+						) : (
+							<>
+								<SearchInput
+									placeholder="Origen"
+									value={originQuery}
+									onChangeText={setOriginQuery}
+									onBlur={validateOrigin}
+									results={originResults}
+									onResultSelect={(item) => handleResultSelect(item, 'origin')}
+								/>
+								<SearchInput
+									placeholder="Destino"
+									value={destinationQuery}
+									onChangeText={setDestinationQuery}
+									results={destinationResults}
+									onResultSelect={(item) => handleResultSelect(item, 'destination')}
+								/>
+							</>
+						)}
+					</View>
 
 					{routeInfo && (
-						<>
-							{showRouteInfo && (
-								<View style={styles.inputsContainer}>
-									<RouteInfoWidget routeInfo={routeInfo} />
-								</View>
-							)}
-							<InfoButton
-								onPress={() => setShowRouteInfo(prev => !prev)}
-								isRouteCalculated={true}
-							/>
-						</>
+						<InfoButton
+							onPress={() => setShowRouteInfo(prev => !prev)}
+							isRouteCalculated={true}
+						/>
 					)}
 
 					{showConfirm && (
@@ -346,7 +317,7 @@ export const MapDirections: React.FC = () => {
 							{routeInfo ? (
 								<TouchableOpacity
 									style={[styles.button, styles.confirmButton]}
-									onPress={() => navigation.goBack()}
+									onPress={handleNavigateBack}
 								>
 									<Text style={styles.buttonText}>Calcular otra ruta</Text>
 								</TouchableOpacity>

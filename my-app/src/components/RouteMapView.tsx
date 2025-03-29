@@ -1,9 +1,52 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import MapView, { Marker, Polyline, Callout } from 'react-native-maps';
-import { View, Text } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 
-// ... (rest of the imports and interface remain the same)
+interface Coordinate {
+	latitude: number;
+	longitude: number;
+}
+
+interface StopPoint {
+	coordinate: Coordinate;
+	title: string;
+	stopId: string;
+}
+
+interface Route {
+	coordinates: Coordinate[];
+	type: 'walking' | 'bus';
+}
+
+interface Location {
+	latitude: number;
+	longitude: number;
+}
+
+interface LatLng {
+	lat: number;
+	lng: number;
+}
+
+interface Point {
+	latLng: LatLng;
+	title: string;
+}
+
+interface RouteMapViewProps {
+	mapRef: any;
+	initialRegion: {
+		latitude: number;
+		longitude: number;
+		latitudeDelta: number;
+		longitudeDelta: number;
+	};
+	location: Location;
+	pathCoordinates: Route[];
+	stopPoints: StopPoint[];
+	origin: Point | null;
+	destination: Point | null;
+}
 
 export const RouteMapView: React.FC<RouteMapViewProps> = ({
 	mapRef,
@@ -40,17 +83,6 @@ export const RouteMapView: React.FC<RouteMapViewProps> = ({
 					title={stop.title}
 				>
 					<View style={styles.stopMarker} />
-					<Callout tooltip>
-						<View style={styles.calloutContainer}>
-							<Text style={styles.calloutTitle}>{stop.title}</Text>
-							{stop.arrivalTime && (
-								<View style={styles.timeContainer}>
-									<Text style={styles.timeLabel}>Llegada:</Text>
-									<Text style={styles.timeValue}>{stop.arrivalTime}</Text>
-								</View>
-							)}
-						</View>
-					</Callout>
 				</Marker>
 			))}
 
@@ -108,36 +140,5 @@ const styles = StyleSheet.create({
 		backgroundColor: '#F44336',
 		borderWidth: 2,
 		borderColor: '#fff',
-	},
-	calloutContainer: {
-		backgroundColor: 'white',
-		borderRadius: 8,
-		padding: 12,
-		maxWidth: 250,
-		elevation: 5,
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.25,
-		shadowRadius: 3.84,
-	},
-	calloutTitle: {
-		fontSize: 14,
-		fontWeight: '600',
-		marginBottom: 8,
-		color: '#333',
-	},
-	timeContainer: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		gap: 8,
-	},
-	timeLabel: {
-		fontSize: 12,
-		color: '#666',
-	},
-	timeValue: {
-		fontSize: 14,
-		color: '#615EFC',
-		fontWeight: '600',
 	},
 });
